@@ -291,23 +291,20 @@ class OktaSdkBridge: RCTEventEmitter {
             return
         }
         
-        var dic = [
-            OktaSdkConstant.AUTHENTICATED_KEY: false
+        var promiseResult = [
+        	OktaSdkConstant.AUTHENTICATED_KEY: false
         ]
         
         guard let stateManager = OktaOidcStateManager.readFromSecureStorage(for: oidcConfig) else {
-            promiseResolver(dic)
+            promiseResolver(promiseResult)
             return
         }
         
-        if stateManager.idToken != nil || stateManager.accessToken != nil {
-            dic = [
-                OktaSdkConstant.AUTHENTICATED_KEY: true
-            ]
-        }
+        // State Manager returns non expired (fresh) tokens.
+        let areTokensValidAndFresh = stateManager.idToken != nil && stateManager.accessToken != nil
+        promiseResult[OktaSdkConstant.AUTHENTICATED_KEY] = areTokensValidAndFresh
         
-        promiseResolver(dic)
-        return
+        promiseResolver(promiseResult)
     }
     
     @objc(revokeAccessToken:promiseRejecter:)
